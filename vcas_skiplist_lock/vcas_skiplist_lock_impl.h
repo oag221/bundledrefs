@@ -340,7 +340,7 @@ V skiplist<K, V, RecManager>::doInsert(const int tid, const K& key,
       SOFTWARE_BARRIER;
       for (level = 0; level <= topLevel; level++) {
         rqProvider->cas_vcas(tid, &p_preds[level]->p_next[level],
-                             p_succs[level], p_new_node);
+                                   p_succs[level], p_new_node);
         assert(p_preds[level]->key < p_new_node->key);
       }
       nodeptr insertedNodes[] = {p_new_node, NULL};

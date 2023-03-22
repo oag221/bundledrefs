@@ -1,3 +1,5 @@
+// NOTE: all I changed in this file was moving NodeType from class template to function template bc vertex and edge
+
 
 #ifndef RQ_VCAS_H
 #define RQ_VCAS_H
@@ -29,8 +31,8 @@ struct vcas_obj_t {
 };
 #endif
 
-template <typename K, typename V, typename NodeType, typename DataStructure,
-          typename RecordManager, bool logicalDeletion,
+template <typename K, typename V, typename DataStructure,
+            typename RecordManager, bool logicalDeletion,
           bool canRetireNodesLogicallyDeletedByOtherProcesses>
 class RQProvider {
  private:
@@ -150,7 +152,9 @@ class RQProvider {
 
 #ifdef NVCAS_OPTIMIZATION
   // invoke whenever a new node is created/initialized
+  template <typename NodeType>
   inline void init_node(const int tid, NodeType* const node) {}
+
 
   // for each address addr that is modified by rq_linearize_update_at_write
   // or rq_linearize_update_at_cas, you must replace any initialization of addr
@@ -218,18 +222,21 @@ class RQProvider {
   // IF DATA STRUCTURE PERFORMS LOGICAL DELETION
   // run some time BEFORE the physical deletion of a node
   // whose key has ALREADY been logically deleted.
+  template <typename NodeType>
   inline void announce_physical_deletion(const int tid,
                                          NodeType* const* const deletedNodes) {}
 
   // IF DATA STRUCTURE PERFORMS LOGICAL DELETION
   // run AFTER performing announce_physical_deletion,
   // if the cas that was trying to physically delete node failed.
+  template <typename NodeType>
   inline void physical_deletion_failed(const int tid,
                                        NodeType* const* const deletedNodes) {}
 
   // IF DATA STRUCTURE PERFORMS LOGICAL DELETION
   // run AFTER performing announce_physical_deletion,
   // if the cas that was trying to physically delete node succeeded.
+  template <typename NodeType>
   inline void physical_deletion_succeeded(const int tid,
                                           NodeType* const* const deletedNodes) {
     int i;
@@ -240,7 +247,7 @@ class RQProvider {
 
   // replace the linearization point of an update that inserts or deletes nodes
   // with an invocation of this function if the linearization point is a WRITE
-  template <typename T>
+  template <typename T, typename NodeType>
   inline T linearize_update_at_write(const int tid,
                                      vcas_obj_t<T>* volatile const* lin_addr,
                                      const T& lin_newval,
@@ -294,7 +301,7 @@ class RQProvider {
 
   // replace the linearization point of an update that inserts or deletes nodes
   // with an invocation of this function if the linearization point is a CAS
-  template <typename T>
+  template <typename T, typename NodeType>
   inline T linearize_update_at_cas(const int tid,
                                    vcas_obj_t<T>* volatile* const lin_vcas_obj,
                                    const T& lin_oldval, const T& lin_newval,
@@ -348,6 +355,7 @@ class RQProvider {
   // invoke each time a traversal visits a node with a key in the desired range:
   // if the node belongs in the range query, it will be placed in
   // rqResult[index]
+  template <typename NodeType>
   inline void traversal_try_add(const int tid, NodeType* const node,
                                 K* const rqResultKeys, V* const rqResultValues,
                                 int* const startIndex, const K& lo, const K& hi,
@@ -373,6 +381,7 @@ class RQProvider {
 
 #else
   // invoke whenever a new node is created/initialized
+  template <typename NodeType>
   inline void init_node(const int tid, NodeType* const node) {
     node->ts = TBD;
     node->nextv = NULL;
@@ -439,18 +448,21 @@ class RQProvider {
   // IF DATA STRUCTURE PERFORMS LOGICAL DELETION
   // run some time BEFORE the physical deletion of a node
   // whose key has ALREADY been logically deleted.
+  template <typename NodeType>
   inline void announce_physical_deletion(const int tid,
                                          NodeType* const* const deletedNodes) {}
 
   // IF DATA STRUCTURE PERFORMS LOGICAL DELETION
   // run AFTER performing announce_physical_deletion,
   // if the cas that was trying to physically delete node failed.
+  template <typename NodeType>
   inline void physical_deletion_failed(const int tid,
                                        NodeType* const* const deletedNodes) {}
 
   // IF DATA STRUCTURE PERFORMS LOGICAL DELETION
   // run AFTER performing announce_physical_deletion,
   // if the cas that was trying to physically delete node succeeded.
+  template <typename NodeType>
   inline void physical_deletion_succeeded(const int tid,
                                           NodeType* const* const deletedNodes) {
     int i;
@@ -461,7 +473,7 @@ class RQProvider {
 
   // replace the linearization point of an update that inserts or deletes nodes
   // with an invocation of this function if the linearization point is a WRITE
-  template <typename T>
+  template <typename T, typename NodeType>
   inline T linearize_update_at_write(const int tid, T volatile* const lin_addr,
                                      const T& lin_newval,
                                      NodeType* const* const insertedNodes,
@@ -487,7 +499,7 @@ class RQProvider {
 
   // replace the linearization point of an update that inserts or deletes nodes
   // with an invocation of this function if the linearization point is a CAS
-  template <typename T>
+  template <typename T, typename NodeType>
   inline T linearize_update_at_cas(const int tid, T volatile* const lin_addr,
                                    const T& lin_oldval, const T& lin_newval,
                                    NodeType* const* const insertedNodes,
@@ -539,6 +551,7 @@ class RQProvider {
   // invoke each time a traversal visits a node with a key in the desired range:
   // if the node belongs in the range query, it will be placed in
   // rqResult[index]
+  template <typename NodeType>
   inline void traversal_try_add(const int tid, NodeType* const node,
                                 K* const rqResultKeys, V* const rqResultValues,
                                 int* const startIndex, const K& lo, const K& hi,
@@ -578,9 +591,3 @@ class RQProvider {
 };
 
 #endif /* RQ_UNSAFE_H */
-
-
-
-// rqProvider->cas_vcas(tid, &, o, n)
-
-// rqProvider->read_vcas(tid, &)

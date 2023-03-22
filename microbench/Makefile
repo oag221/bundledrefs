@@ -101,6 +101,12 @@ BUNDLE_FLAGS = -DRQ_BUNDLE -DBUNDLE_LINKED_BUNDLE
 
 thispath=
 
+.PHONY: nb_graph.rq_vcas
+nb_graph: nb_graph.rq_vcas
+nb_graph.rq_vcas:
+	$(GPP) $(FLAGS) -o $(thispath)$(machine).$@$(filesuffix).out $(xargs) -DVCAS_GRAPH -DRQ_VCAS $(pinning) $(thispath)main.cpp $(LDFLAGS)
+
+
 .PHONY: lazylist.rq_lockfree lazylist.rq_rwlock lazylist.rq_unsafe lazylist.rq_bundle lazylist.rq_bundlerq lazylist.rq_vcas lazylist.rq_rlu
 lazylist: lazylist.rq_lockfree lazylist.rq_rwlock lazylist.rq_unsafe lazylist.rq_bundle lazylist.rq_bundlerq lazylist.rq_vcas lazylist.rq_rlu
 lazylist.rq_lockfree:

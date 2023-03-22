@@ -304,6 +304,7 @@ retry:
     recordmgr->enterQuiescentState(tid);
     goto retry;
   }
+  // check if either child is NULL -- easy to remove if so
   if (rqProvider->read_vcas(tid, curr->child[0]) == NULL) {
     curr->marked = true;
 

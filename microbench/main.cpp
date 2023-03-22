@@ -265,8 +265,7 @@ void prefill(DS_DECLARATION *ds) {
             chrono::high_resolution_clock::now() - glob.startTime)
             .count();
     glob.elapsedMillisNapping = 0;
-    while (glob.running.load() >
-           0) {  //  && glob.elapsedMillisNapping < MAX_NAPPING_MILLIS) {
+    while (glob.running.load() > 0) {  //  && glob.elapsedMillisNapping < MAX_NAPPING_MILLIS) {
       nanosleep(&tsNap, NULL);
       glob.elapsedMillisNapping =
           chrono::duration_cast<chrono::milliseconds>(
@@ -553,6 +552,23 @@ void *thread_rq(void *_id) {
   pthread_exit(NULL);
 }
 
+void graph_trial() {
+  // TODO: what do these lines do
+  INIT_ALL;
+  papi_init_program(TOTAL_THREADS);
+
+  glob.elapsedMillis = 0;
+  glob.elapsedMillisNapping = 0;
+  glob.start = false;
+  glob.done = false;
+  glob.running = 0;
+  glob.prefillIntervalElapsedMillis = 0;
+  glob.prefillKeySum = 0;
+  glob.__ds = (void *)DS_CONSTRUCTOR;
+  DS_DECLARATION *ds = (DS_DECLARATION *)glob.__ds;
+
+}
+
 void trial() {
   INIT_ALL;
   papi_init_program(TOTAL_THREADS);
@@ -647,13 +663,9 @@ void trial() {
   }
 
   const long MAX_NAPPING_MILLIS = (MILLIS_TO_RUN > 0 ? 5000 : 30000);
-  glob.elapsedMillis =
-      chrono::duration_cast<chrono::milliseconds>(
-          chrono::high_resolution_clock::now() - glob.startTime)
-          .count();
+  glob.elapsedMillis = chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now() - glob.startTime).count();
   glob.elapsedMillisNapping = 0;
-  while (glob.running.load() >
-         0) {  //  && glob.elapsedMillisNapping < MAX_NAPPING_MILLIS) {
+  while (glob.running.load() > 0) {  //  && glob.elapsedMillisNapping < MAX_NAPPING_MILLIS) {
     nanosleep(&tsNap, NULL);
     glob.elapsedMillisNapping =
         chrono::duration_cast<chrono::milliseconds>(
